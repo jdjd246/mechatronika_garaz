@@ -1,0 +1,103 @@
+body {
+    background-color: #292a2e;
+    min-height: 100vh;
+}
+
+/* ── Nagłówek ── */
+.alarm-header {
+    background: #212226;
+    border-bottom: 1px solid #35363a;
+}
+
+/* ── Kontener obrazu ── */
+.garage-wrapper {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+}
+
+.garage-img {
+    width: 100%;
+    max-width: 680px;
+    display: block;
+}
+
+/* ── Karta czujnika ── */
+.sensor-card {
+    position: absolute;
+    background: rgba(13, 17, 23, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px 14px;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    min-width: 140px;
+}
+
+.sensor-card:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    z-index: 10;
+}
+
+.sensor-card .sc-icon {
+    font-size: 18px;
+    line-height: 1;
+    width: 18px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.sensor-card .sc-name {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #8b949e;
+}
+
+.sensor-card .sc-status {
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 10px;
+}
+
+/* Statusy */
+.s-safe  { color: #3fb950; }
+.s-alert { color: #f85149; }
+
+/* Pulsująca kropka */
+.dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.dot-green {
+    background: #3fb950;
+    box-shadow: 0 0 6px #3fb950;
+}
+.dot-red {
+    background: #f85149;
+    box-shadow: 0 0 6px #f85149;
+    animation: pulse-red 1.2s ease-in-out infinite;
+}
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 4px #f85149; }
+    50%       { box-shadow: 0 0 10px #f85149; }
+}
+
+#card-ruch .sc-icon {
+    margin-right: 2px;
+}
+
+/* ── Pozycje kart na obrazie ── */
+#card-ruch  { top: 6%; left: 43%; }
+#card-brama { top: 30%; left: 4%;  }
+#card-okno  { top: 19%; left: 65%; }
+#card-drzwi { top: 35%; left: 79%; }
