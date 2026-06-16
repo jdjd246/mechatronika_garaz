@@ -29,7 +29,15 @@
 <main class="container-fluid px-4">
     <div class="row justify-content-center">
         <div class="col-auto">
-
+            <!-- Stan alarmu -->
+            <div>
+                Alarm: <span id="alarm">%ALARM%</span>
+            </div>
+            <!-- Przyciski do resetowania i zbrojenia alarmu -->
+            <div>
+                <a href="/alarmreset"><button class="button">Resetuj</button></a>
+                <a href="/alarmarm"><button class="button">Uzbrój</button></a>
+            </div>
             <!-- Obraz garażu z kartami czujników -->
             <div class="garage-wrapper">
                 <img src="garaz.png" alt="Model garażu" class="garage-img">
@@ -41,7 +49,7 @@
                         <div>
                             <div class="sc-name">Czujnik ruchu</div>
                             <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span>Brak ruchu
+                                <span class="dot dot-green"></span> <span id="ruch">%RUCH%</span>
                             </div>
                         </div>
                     </div>
@@ -54,7 +62,7 @@
                         <div>
                             <div class="sc-name">Brama garażowa</div>
                             <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span>Zamknięta
+                                <span class="dot dot-green"></span> <span id="brama">%BRAMA%</span>
                             </div>
                         </div>
                     </div>
@@ -67,7 +75,7 @@
                         <div>
                             <div class="sc-name">Okno</div>
                             <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span>Zamknięte
+                                <span class="dot dot-green"></span> <span id="okno">%OKNO%</span>
                             </div>
                         </div>
                     </div>
@@ -80,7 +88,7 @@
                         <div>
                             <div class="sc-name">Drzwi</div>
                             <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span>Zamknięte
+                                <span class="dot dot-green"></span> <span id="drzwi">%DRZWI%</span>
                             </div>
                         </div>
                     </div>
@@ -103,5 +111,35 @@
     tick();
     setInterval(tick, 1000);
 </script>
+
+<script>
+  const updateSensorValue = (id, endpoint) => {
+    fetch(endpoint)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${endpoint}`);
+        }
+        return response.text();
+      })
+      .then(data => {
+        document.getElementById(id).textContent = data;
+      })
+      .catch(error => {
+        console.error(error);
+        document.getElementById(id).textContent = 'Error';
+      });
+  };
+
+  // Update all sensors every 5 seconds
+  setInterval(() => {
+    updateSensorValue('alarm', '/alarm');
+    updateSensorValue('drzwi', '/drzwi');
+    updateSensorValue('brama', '/brama');
+    updateSensorValue('okno', '/okno');
+    updateSensorValue('ruch', '/ruch');
+  }, 5000);
+  
+</script>
+
 </body>
 </html>
