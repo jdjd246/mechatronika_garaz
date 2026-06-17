@@ -12,14 +12,18 @@
 <body>
 
 <!-- ═══════════════ NAGŁÓWEK ═══════════════ -->
-<header class="alarm-header py-3 mb-4">
+<header class="alarm-header py-3 mb-0">
     <div class="container-fluid px-4">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-shield-lock-fill text-success fs-4"></i>
-                <span class="fw-bold text-white fs-5 letter-spacing-1">CENTRALA ALARMOWA</span>
+                <span class="fw-bold text-white fs-5">CENTRALA ALARMOWA</span>
             </div>
             <div class="d-flex align-items-center gap-3">
+                <span id="alarm-badge" class="badge bg-success fs-6">
+                    <i class="bi bi-bell-slash-fill me-1"></i><span id="alarm">%ALARM%</span>
+                </span>
+                <span id="clock" class="text-secondary fw-mono"></span>
             </div>
         </div>
     </div>
@@ -27,118 +31,263 @@
 
 <!-- ═══════════════ GŁÓWNA TREŚĆ ═══════════════ -->
 <main class="container-fluid px-4">
-    <div class="row justify-content-center">
-        <div class="col-auto">
-            <!-- Stan alarmu -->
-            <div>
-                Alarm: <span id="alarm">%ALARM%</span>
-            </div>
-            <!-- Przyciski do resetowania i zbrojenia alarmu -->
-            <div>
-                <a href="/alarmreset"><button class="button">Resetuj</button></a>
-                <a href="/alarmarm"><button class="button">Uzbrój</button></a>
-            </div>
-            <!-- Obraz garażu z kartami czujników -->
-            <div class="garage-wrapper">
-                <img src="garaz.png" alt="Model garażu" class="garage-img">
+    <!-- Układ: garaż po lewej, prawy panel po prawej -->
+    <div class="main-layout">
 
-                <!-- Czujnik ruchu — przy czerwonej kopule na suficie (góra-lewo) -->
-                <div class="sensor-card" id="card-ruch">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-person-walking sc-icon text-info"></i>
-                        <div>
-                            <div class="sc-name">Czujnik ruchu</div>
-                            <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span> <span id="ruch">%RUCH%</span>
+                <!-- ═══ OBRAZ GARAŻU Z KARTAMI CZUJNIKÓW ═══ -->
+                <div class="garage-wrapper">
+                    <img src="garaz.png" alt="Model garażu" class="garage-img">
+
+                    <!-- Czujnik ruchu -->
+                    <div class="sensor-card" id="card-ruch">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-person-walking sc-icon text-info"></i>
+                            <div>
+                                <div class="sc-name">Czujnik ruchu</div>
+                                <div class="sc-status s-safe">
+                                    <span class="dot dot-green"></span> <span id="ruch">%RUCH%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Brama garażowa — lewa ściana -->
-                <div class="sensor-card" id="card-brama">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-warehouse sc-icon text-info"></i>
-                        <div>
-                            <div class="sc-name">Brama garażowa</div>
-                            <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span> <span id="brama">%BRAMA%</span>
+                    <!-- Brama garażowa -->
+                    <div class="sensor-card" id="card-brama">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-warehouse sc-icon text-info"></i>
+                            <div>
+                                <div class="sc-name">Brama garażowa</div>
+                                <div class="sc-status s-safe">
+                                    <span class="dot dot-green"></span> <span id="brama">%BRAMA%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Okno — tylna prawa ściana -->
-                <div class="sensor-card" id="card-okno">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-person-through-window sc-icon text-info"></i>
-                        <div>
-                            <div class="sc-name">Okno</div>
-                            <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span> <span id="okno">%OKNO%</span>
+                    <!-- Okno -->
+                    <div class="sensor-card" id="card-okno">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-person-through-window sc-icon text-info"></i>
+                            <div>
+                                <div class="sc-name">Okno</div>
+                                <div class="sc-status s-safe">
+                                    <span class="dot dot-green"></span> <span id="okno">%OKNO%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Drzwi — prawa ściana -->
-                <div class="sensor-card" id="card-drzwi">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-door-closed sc-icon text-info"></i>
-                        <div>
-                            <div class="sc-name">Drzwi</div>
-                            <div class="sc-status s-safe">
-                                <span class="dot dot-green"></span> <span id="drzwi">%DRZWI%</span>
+                    <!-- Drzwi -->
+                    <div class="sensor-card" id="card-drzwi">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-door-closed sc-icon text-info"></i>
+                            <div>
+                                <div class="sc-name">Drzwi</div>
+                                <div class="sc-status s-safe">
+                                    <span class="dot dot-green"></span> <span id="drzwi">%DRZWI%</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div><!-- /garage-wrapper -->
 
-            </div><!-- /garage-wrapper -->
+                <!-- ═══ PRAWY PANEL ═══ -->
+                <div class="right-panel">
 
-        </div>
-    </div>
+                    <!-- Panel sterowania -->
+                    <div class="rp-block rp-control">
+                        <div class="rp-title">Panel sterowania</div>
+
+                        <!-- Status alarmu -->
+                        <div class="alarm-status-box state-disarmed" id="alarm-status-box">
+                            <i class="bi bi-shield-slash-fill" id="alarm-status-icon"></i>
+                            <div>
+                                <div class="alarm-status-label" id="alarm-status-label">ROZBROJONY</div>
+                                <div class="alarm-status-sub" id="alarm-status-sub">System nieaktywny</div>
+                            </div>
+                        </div>
+
+                        <!-- Przyciski obok siebie -->
+                        <div class="control-grid">
+                            <button id="btn-det" class="ctrl-btn btn btn-outline-secondary" onclick="toggleDetection()">
+                                <i class="bi bi-eye-slash-fill" id="btn-det-icon"></i>
+                                <span id="det-action">WŁĄCZ DETEKCJĘ</span>
+                            </button>
+                            <button class="ctrl-btn btn btn-outline-warning" onclick="resetAlarm()">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <span>RESETUJ ALARM</span>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <div class="rp-divider"></div>
+
+                    <!-- Historia zdarzeń -->
+                    <div class="rp-block rp-history">
+                        <div class="rp-title d-flex align-items-center justify-content-between">
+                            <span>Historia zdarzeń</span>
+                            <span class="badge bg-secondary fw-normal" id="history-count">0</span>
+                        </div>
+                        <div class="history-list" id="history-list">
+                            <div class="text-secondary text-center py-3 fst-italic" style="font-size:0.82rem;">
+                                Brak zdarzeń
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-clear-history" onclick="clearHistory()">
+                            <i class="bi bi-trash me-1"></i>Wyczyść historię
+                        </button>
+                    </div>
+
+                </div><!-- /right-panel -->
+
+    </div><!-- /main-layout -->
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     /* Zegar */
     function tick() {
-        const now = new Date();
         document.getElementById('clock').textContent =
-            now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     }
     tick();
     setInterval(tick, 1000);
 </script>
-
 <script>
-  const updateSensorValue = (id, endpoint) => {
-    fetch(endpoint)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${endpoint}`);
-        }
-        return response.text();
-      })
-      .then(data => {
-        document.getElementById(id).textContent = data;
-      })
-      .catch(error => {
-        console.error(error);
-        document.getElementById(id).textContent = 'Error';
-      });
-  };
+    // ── Stan lokalny ──────────────────────────────────────────
+    let detectionOn = true;   // /detection → "1" = aktywna
+    let hasAlarm    = false;  // /alarm     → aktywny alarm
 
-  // Update all sensors every 5 seconds
-  setInterval(() => {
-    updateSensorValue('alarm', '/alarm');
-    updateSensorValue('drzwi', '/drzwi');
-    updateSensorValue('brama', '/brama');
-    updateSensorValue('okno', '/okno');
-    updateSensorValue('ruch', '/ruch');
-  }, 5000);
-  
+    // ── Pomocnik fetch ────────────────────────────────────────
+    function apiFetch(endpoint) {
+        return fetch(endpoint).then(r => {
+            if (!r.ok) throw new Error(endpoint);
+            return r.text();
+        });
+    }
+
+    // ── Status alarmu (nagłówek + panel) ─────────────────────
+    function updateAlarm(val) {
+        document.getElementById('alarm').textContent = val;
+        const badge    = document.getElementById('alarm-badge');
+        const wasAlarm = hasAlarm;
+        hasAlarm = val.trim() !== 'BRAK' && val.trim() !== '0' && val.trim() !== '';
+        badge.className = 'badge fs-6 ' + (hasAlarm ? 'bg-danger' : 'bg-success');
+        badge.querySelector('i').className = 'bi me-1 ' + (hasAlarm ? 'bi-bell-fill' : 'bi-bell-slash-fill');
+        if (hasAlarm && !wasAlarm) {
+            addHistoryEntry('Wykryto wtargnięcie!', 'bi bi-exclamation-triangle-fill', 'text-danger');
+        }
+        updateStatusBox();
+    }
+
+    // ── Wskaźnik stanu w panelu ───────────────────────────────
+    function updateStatusBox() {
+        const box   = document.getElementById('alarm-status-box');
+        const label = document.getElementById('alarm-status-label');
+        const sub   = document.getElementById('alarm-status-sub');
+        const icon  = document.getElementById('alarm-status-icon');
+
+        box.className = 'alarm-status-box ';
+        if (hasAlarm) {
+            box.classList.add('state-alert');
+            icon.className    = 'bi bi-exclamation-triangle-fill';
+            label.textContent = 'ALARM AKTYWNY';
+            sub.textContent   = 'Wykryto wtargnięcie · naciśnij RESETUJ';
+        } else if (detectionOn) {
+            box.classList.add('state-detection');
+            icon.className    = 'bi bi-eye-fill';
+            label.textContent = 'DETEKCJA ON';
+            sub.textContent   = 'Czujniki aktywne · monitoring działa';
+        } else {
+            box.classList.add('state-disarmed');
+            icon.className    = 'bi bi-eye-slash-fill';
+            label.textContent = 'DETEKCJA OFF';
+            sub.textContent   = 'Monitoring wyłączony · naciśnij WŁĄCZ';
+        }
+    }
+
+    function resetAlarm() {
+        hasAlarm = false;
+        updateStatusBox();
+        addHistoryEntry('Skasowano alarm', 'bi bi-arrow-counterclockwise', 'text-warning');
+        apiFetch('/alarmreset').catch(console.error);
+    }
+
+    // ── Detekcja ──────────────────────────────────────────────
+    function updateDetectionUI(on) {
+        detectionOn = on;
+        const btn    = document.getElementById('btn-det');
+        const icon   = document.getElementById('btn-det-icon');
+        const action = document.getElementById('det-action');
+        btn.className    = 'ctrl-btn btn ' + (on ? 'btn-outline-danger' : 'btn-outline-info');
+        icon.className   = 'bi ' + (on ? 'bi-eye-slash-fill' : 'bi-eye-fill');
+        action.textContent = on ? 'WYŁĄCZ DETEKCJĘ' : 'WŁĄCZ DETEKCJĘ';
+        updateStatusBox();
+    }
+
+    function toggleDetection() {
+        const turningOn = !detectionOn;
+        updateDetectionUI(turningOn);
+        if (turningOn) {
+            addHistoryEntry('Włączono detekcję', 'bi bi-eye-fill', 'text-info');
+        } else {
+            addHistoryEntry('Wyłączono detekcję', 'bi bi-eye-slash-fill', 'text-secondary');
+        }
+        apiFetch(turningOn ? '/detectionon' : '/detectionoff').catch(console.error);
+    }
+
+    // ── Historia zdarzeń (frontend) ───────────────────────────
+    // Backend może zastąpić localHistory danymi z /history
+    let localHistory = [];
+
+    function addHistoryEntry(label, iconClass, colorClass) {
+        const ts = new Date().toLocaleString('pl-PL', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        });
+        localHistory.unshift({ ts, label, icon: iconClass, color: colorClass });
+        renderHistory(localHistory);
+    }
+
+    function renderHistory(entries) {
+        const list  = document.getElementById('history-list');
+        const count = document.getElementById('history-count');
+        count.textContent = entries.length;
+
+        if (!entries.length) {
+            list.innerHTML = '<div class="text-secondary text-center py-3 fst-italic" style="font-size:0.82rem;">Brak zdarzeń</div>';
+            return;
+        }
+
+        list.innerHTML = entries.map((e, i) => {
+            const sep = i < entries.length - 1 ? 'border-bottom border-secondary border-opacity-25' : '';
+            return `
+            <div class="history-entry d-flex align-items-center gap-2 py-2 px-1 ${sep}">
+                <i class="${e.icon} ${e.color}" style="width:14px;font-size:13px;flex-shrink:0;"></i>
+                <span class="fw-semibold text-white flex-grow-1" style="font-size:0.82rem;">${e.label}</span>
+                <span class="text-secondary hist-ts">${e.ts}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ── Polling ───────────────────────────────────────────────
+    function pollAll() {
+        apiFetch('/alarm').then(updateAlarm).catch(console.error);
+        apiFetch('/ruch').then(v  => document.getElementById('ruch').textContent  = v).catch(console.error);
+        apiFetch('/drzwi').then(v => document.getElementById('drzwi').textContent = v).catch(console.error);
+        apiFetch('/brama').then(v => document.getElementById('brama').textContent = v).catch(console.error);
+        apiFetch('/okno').then(v  => document.getElementById('okno').textContent  = v).catch(console.error);
+        apiFetch('/detection').then(v => updateDetectionUI(v.trim() === '1')).catch(console.error);
+    }
+
+    function clearHistory() {
+        localHistory = [];
+        renderHistory(localHistory);
+    }
+
+    pollAll();
+    setInterval(pollAll, 5000);
 </script>
 
 </body>
