@@ -172,12 +172,9 @@
         document.getElementById('alarm').textContent = val;
         const badge    = document.getElementById('alarm-badge');
         const wasAlarm = hasAlarm;
-        hasAlarm = val.trim() !== 'BRAK' && val.trim() !== '0' && val.trim() !== '';
+        hasAlarm = val.trim() === 'AKTYWOWANY';
         badge.className = 'badge fs-6 ' + (hasAlarm ? 'bg-danger' : 'bg-success');
         badge.querySelector('i').className = 'bi me-1 ' + (hasAlarm ? 'bi-bell-fill' : 'bi-bell-slash-fill');
-        if (hasAlarm && !wasAlarm) {
-            addHistoryEntry('Wykryto wtargnięcie!', 'bi bi-exclamation-triangle-fill', 'text-danger');
-        }
         updateStatusBox();
     }
 
@@ -210,7 +207,6 @@
     function resetAlarm() {
         hasAlarm = false;
         updateStatusBox();
-        addHistoryEntry('Skasowano alarm', 'bi bi-arrow-counterclockwise', 'text-warning');
         apiFetch('/alarmreset').catch(console.error);
     }
 
@@ -229,25 +225,99 @@
     function toggleDetection() {
         const turningOn = !detectionOn;
         updateDetectionUI(turningOn);
-        if (turningOn) {
-            addHistoryEntry('Włączono detekcję', 'bi bi-eye-fill', 'text-info');
-        } else {
-            addHistoryEntry('Wyłączono detekcję', 'bi bi-eye-slash-fill', 'text-secondary');
-        }
-        apiFetch(turningOn ? '/detectionon' : '/detectionoff').catch(console.error);
+        apiFetch('/alarmarmtoggle').catch(console.error);
     }
 
     // ── Historia zdarzeń (frontend) ───────────────────────────
     // Backend może zastąpić localHistory danymi z /history
     let localHistory = [];
+    let lastLogId = 0;
 
-    function addHistoryEntry(label, iconClass, colorClass) {
-        const ts = new Date().toLocaleString('pl-PL', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
+    function parseNewLogs(logText) {
+        const result = [];
+
+        logText.split('\n').forEach(line => {
+
+            if (!line.trim())
+                return;
+
+            const parts = line.split('|');
+
+            if(parts.length < 4)
+                return;
+
+            const id    = Number(parts[0]);
+            const ts    = parts[1];
+            const type  = parts[2];
+            const label = parts.slice(3).join('|');
+
+            let icon  = 'fa-solid fa-file-lines';
+            let color = 'text-light';
+
+            switch(type)
+            {
+                case 'ALARM':
+                    icon = 'bi bi-exclamation-triangle-fill';
+                    color = 'text-danger';
+                    break;
+
+                case 'RESET':
+                    icon = 'bi bi-arrow-counterclockwise';
+                    color = 'text-warning';
+                    break;
+
+                case 'ARM':
+                    icon = 'bi bi-eye-fill';
+                    color = 'text-info';
+                    break;
+
+                case 'DISARM':
+                    icon = 'bi bi-eye-slash-fill';
+                    color = 'text-secondary';
+                    break;
+            }
+
+            result.push({
+                id,
+                ts,
+                label,
+                icon,
+                color
+            });
+
+            if(id > lastLogId)
+                lastLogId = id;
         });
-        localHistory.unshift({ ts, label, icon: iconClass, color: colorClass });
+
+        return result;
+    }
+
+    async function updateLogs() {
+    try
+    {
+        const response = await fetch(`/logs?lastId=${lastLogId}`);
+
+        if(!response.ok)
+            return;
+
+        const text = await response.text();
+
+        if(!text.trim())
+            return;
+
+        const newEntries = parseNewLogs(text);
+
+        if(!newEntries.length)
+            return;
+
+        localHistory.unshift(...newEntries.reverse());
+
         renderHistory(localHistory);
+    }
+    catch(err)
+    {
+        console.error(err);
+    }
     }
 
     function renderHistory(entries) {
@@ -279,11 +349,14 @@
         apiFetch('/brama').then(v => document.getElementById('brama').textContent = v).catch(console.error);
         apiFetch('/okno').then(v  => document.getElementById('okno').textContent  = v).catch(console.error);
         apiFetch('/detection').then(v => updateDetectionUI(v.trim() === '1')).catch(console.error);
+        updateLogs();
     }
 
     function clearHistory() {
         localHistory = [];
+        lastLogId=0;
         renderHistory(localHistory);
+        apiFetch('/clearlogs').catch(console.error);
     }
 
     pollAll();
