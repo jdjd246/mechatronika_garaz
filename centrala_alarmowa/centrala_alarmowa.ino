@@ -254,8 +254,8 @@ void setup() {
     request->send(LittleFS, "/style.css", "text/css");
   });
 
-  server.on("/garaz.png", HTTP_GET, [](AsyncWebServerRequest *request){
-  request->send(LittleFS, "/garaz.png", "image/png");
+  server.on("/garaz.jpg", HTTP_GET, [](AsyncWebServerRequest *request){
+  request->send(LittleFS, "/garaz.jpg", "image/jpeg");
   });
 
   // Route to alarm reset
