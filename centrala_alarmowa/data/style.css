@@ -4,6 +4,13 @@ html, body {
     margin: 0;
 }
 
+@media (max-width: 1100px) {
+    html, body {
+        height: auto;
+        overflow: auto;
+    }
+}
+
 body {
     background-color: #292a2e;
     display: flex;
@@ -29,6 +36,16 @@ main.container-fluid {
     padding-right: 2rem;
 }
 
+@media (max-width: 1100px) {
+    main.container-fluid {
+        flex: unset;
+        overflow: visible;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
 /* ── Układ główny: garaż + prawy panel ── */
 .main-layout {
     display: flex;
@@ -38,18 +55,42 @@ main.container-fluid {
     overflow: hidden;
 }
 
+@media (max-width: 1100px) {
+    .main-layout {
+        flex-direction: column;
+        gap: 16px;
+        flex: unset;
+        overflow: visible;
+    }
+}
+
 /* ── Kontener obrazu ── */
 .garage-wrapper {
     position: relative;
-    flex-shrink: 0;
+    /* Na desktop: pozwól się kurczyć, ale nie poniżej 400px */
+    flex-shrink: 1;
+    min-width: 400px;
     line-height: 0;
 }
 
 .garage-img {
     height: 100%;
     width: auto;
-    max-width: none;
+    max-width: 100%;
     display: block;
+}
+
+@media (max-width: 1100px) {
+    .garage-img {
+        height: auto;
+        width: 100%;
+        max-width: 100%;
+    }
+    .garage-wrapper {
+        width: 100%;
+        min-width: unset;
+        flex-shrink: 0;
+    }
 }
 
 /* ── Karta czujnika ── */
@@ -311,4 +352,34 @@ main.container-fluid {
     opacity: 1;
     border-color: rgba(255,255,255,0.6);
     color: #fff !important;
+}
+
+/* ── Responsywność mobilna ── */
+@media (max-width: 1100px) {
+    .right-panel {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .rp-history {
+        overflow: visible;
+    }
+
+    .history-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* Zmniejsz karty czujników */
+    .sensor-card {
+        padding: 6px 9px;
+        min-width: 90px;
+    }
+    .sensor-card .sc-name   { font-size: 0.58rem; }
+    .sensor-card .sc-status { font-size: 0.68rem; margin-top: 6px; }
+    .sensor-card .sc-icon   { font-size: 14px; width: 14px; }
+
+    /* Karty po prawej stronie — zakotwicz od prawej żeby nie wylatywały */
+    #card-okno  { left: auto; right: 2%; top: 12%; }
+    #card-drzwi { left: auto; right: 2%; top: 30%; }
 }
