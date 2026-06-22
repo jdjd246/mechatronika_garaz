@@ -4,15 +4,15 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include <time.h>
-const char *ssid = "ssid";
-const char *password = "pwd";
+const char *ssid = "Cudy-B248";
+const char *password = "TheJamaicas2025";
 
 // Set Static IP address
-IPAddress local_IP(192, 168, 1, 184);
+//IPAddress local_IP(192, 168, 1, 184);
 // Set Gateway IP address
-IPAddress gateway(192, 168, 1, 1);
+//IPAddress gateway(192, 168, 10, 1);
 
-IPAddress subnet(255, 255, 255, 0);
+//IPAddress subnet(255, 255, 255, 0);
 
 // NTP
 const char* ntpServer = "pool.ntp.org";
@@ -202,15 +202,19 @@ void setup() {
   pinMode(ALARM_OUT_PIN, OUTPUT);
 
   // Initialize LittleFS
+  Serial.println("Starting LittleFS...");
+  bool ok = LittleFS.begin(true);
+  Serial.printf("LittleFS.begin returned: %d\n", ok);
+
   if(!LittleFS.begin()){
     Serial.println("An Error has occurred while mounting LittleFS");
     return;
   }
 
   // Configures static IP address
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("STA Failed to configure");
-  }
+  //if (!WiFi.config(local_IP, gateway, subnet)) {
+  //  Serial.println("STA Failed to configure");
+  //}
 
   WiFi.begin(ssid, password);
   while(WiFi.status() != WL_CONNECTED) {
@@ -227,7 +231,9 @@ void setup() {
 
   struct tm timeinfo;
 
-  int retries = 20;
+  Serial.println("Before NTP");
+
+  int retries = 5;
   while (retries--)
   {
     if(getLocalTime(&timeinfo))
@@ -242,12 +248,36 @@ void setup() {
     delay(500);
   }
 
+  Serial.println("After NTP");
+
+  loadLogCounter();
+
+  Serial.println("After loadLogCounter");
+
+  server.begin();
+
+  Serial.println("Server started");
+
   loadLogCounter();
 
   // Route for root / web page
+  //server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  //  request->send(LittleFS, "/index.html", String(), false, processor);
+  //});
+
+  // Route dla strony głównej z diagnostyką błędu
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(LittleFS, "/index.html", String(), false, processor);
-  });
+  Serial.println("Otrzymano zapytanie o stronę główną /");
+  
+  if (!LittleFS.exists("/index.html")) {
+    Serial.println("BŁĄD: Plik /index.html NIE ISTNIEJE w pamięci LittleFS!");
+    request->send(404, "text/plain", "Blad: Brak pliku index.html w pamieci ESP32. Uruchom Upload filesystem!");
+    return;
+  }
+  
+  Serial.println("Plik index.html znaleziony, wysyłam...");
+  request->send(LittleFS, "/index.html", String(), false, processor);
+});
   
   // Route to load style.css file
   server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){

@@ -210,6 +210,20 @@
         apiFetch('/alarmreset').catch(console.error);
     }
 
+    // Stan sensorów update !
+function updateSensor(id, value) {
+    const card = document.getElementById('card-' + id);
+    const statusDiv = card.querySelector('.sc-status');
+    const dot = card.querySelector('.dot');
+    const span = document.getElementById(id);
+    
+    span.textContent = value;
+    
+    const isAlert = (value === 'Otwarte' || value === 'Otwarta' || value === 'Wykryto ruch');
+    statusDiv.className = 'sc-status ' + (isAlert ? 's-alert' : 's-safe');
+    dot.className = 'dot ' + (isAlert ? 'dot-red' : 'dot-green');
+}
+
     // ── Detekcja ──────────────────────────────────────────────
     function updateDetectionUI(on) {
         detectionOn = on;
@@ -344,10 +358,10 @@
     // ── Polling ───────────────────────────────────────────────
     function pollAll() {
         apiFetch('/alarm').then(updateAlarm).catch(console.error);
-        apiFetch('/ruch').then(v  => document.getElementById('ruch').textContent  = v).catch(console.error);
-        apiFetch('/drzwi').then(v => document.getElementById('drzwi').textContent = v).catch(console.error);
-        apiFetch('/brama').then(v => document.getElementById('brama').textContent = v).catch(console.error);
-        apiFetch('/okno').then(v  => document.getElementById('okno').textContent  = v).catch(console.error);
+apiFetch('/ruch').then(v  => updateSensor('ruch',  v)).catch(console.error);
+apiFetch('/drzwi').then(v => updateSensor('drzwi', v)).catch(console.error);
+apiFetch('/brama').then(v => updateSensor('brama', v)).catch(console.error);
+apiFetch('/okno').then(v  => updateSensor('okno',  v)).catch(console.error);
         apiFetch('/detection').then(v => updateDetectionUI(v.trim() === '1')).catch(console.error);
         updateLogs();
     }
