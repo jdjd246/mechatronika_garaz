@@ -4,8 +4,9 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include <time.h>
-const char *ssid = "Cudy-B248";
-const char *password = "TheJamaicas2025";
+#include <WiFiManager.h>
+//const char *ssid = "Cudy-B248";
+//const char *password = "TheJamaicas2025";
 
 // Set Static IP address
 //IPAddress local_IP(192, 168, 1, 184);
@@ -211,16 +212,20 @@ void setup() {
     return;
   }
 
-  // Configures static IP address
-  //if (!WiFi.config(local_IP, gateway, subnet)) {
-  //  Serial.println("STA Failed to configure");
-  //}
+    // --- WiFiManager MINIMUM ---
+  WiFiManager wm;
+  // Próbuje połączyć się z zapamiętanym WiFi. Jeśli nie uda się, 
+  // tworzy AP o nazwie "ESP32_Alarm_Setup"
 
-  WiFi.begin(ssid, password);
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  // Do testów (Czyści info o sieci wifi do której byliśmy połączeni)
+  // wm.resetSettings();
+  //
+  
+  if(!wm.autoConnect("ESP32_Alarm_Setup")) {
+      delay(3000);
+      ESP.restart();
   }
+  // --------------------------
 
   Serial.println(WiFi.localIP());
   // NTP
