@@ -14,6 +14,7 @@ const int ALARM_PINS[] = { 12,13,14,27 };
 const int NUM_ALARM_PINS = sizeof(ALARM_PINS) / sizeof(ALARM_PINS[0]);
 
 const int ALARM_OUT_PIN = 33;
+const int BOOT_BUTTON = 0;
 
 bool alarmArmed = false;
 bool alarmTripped = false;
@@ -26,6 +27,7 @@ bool alarmsState[NUM_ALARM_PINS];
 
 int logCounter = 0;
 
+WiFiManager wm;
 AsyncWebServer server(80);
 
 void truncateFile(fs::FS &fs, const char * path){
@@ -187,6 +189,12 @@ void handleSensors() {
   }
 }
 
+void saveConfigCallback () {
+  Serial.println("Ustawienia zapisane! Restartuję ESP...");
+  delay(1000);
+  ESP.restart();
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -200,14 +208,11 @@ void setup() {
     return;
   }
 
-    // --- WiFiManager MINIMUM ---
-  WiFiManager wm;
-  // Próbuje połączyć się z zapamiętanym WiFi. Jeśli nie uda się, 
-  // tworzy AP o nazwie "ESP32_Alarm_Setup"
-
+  // --- WiFiManager ---
   // Do testów (Czyści info o sieci wifi do której byliśmy połączeni)
   // wm.resetSettings();
   //
+  wm.setSaveConfigCallback(saveConfigCallback);
   
   if(!wm.autoConnect("ESP32_Alarm_Setup")) {
       delay(3000);
@@ -354,6 +359,13 @@ void setup() {
 }
 
 void loop() {
+  if(digitalRead(BOOT_BUTTON) == LOW){
+    delay(1000); // czekaj 1s
+    Serial.println("Restarting WiFi & ESP...");
+    wm.resetSettings();
+    ESP.restart();
+  }
+
   handleSensors();
 
   digitalWrite(ALARM_OUT_PIN, alarmTripped ? HIGH : LOW);
