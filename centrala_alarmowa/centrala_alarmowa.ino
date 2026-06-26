@@ -5,15 +5,6 @@
 #include <LittleFS.h>
 #include <time.h>
 #include <WiFiManager.h>
-//const char *ssid = "Cudy-B248";
-//const char *password = "TheJamaicas2025";
-
-// Set Static IP address
-//IPAddress local_IP(192, 168, 1, 184);
-// Set Gateway IP address
-//IPAddress gateway(192, 168, 10, 1);
-
-//IPAddress subnet(255, 255, 255, 0);
 
 // NTP
 const char* ntpServer = "pool.ntp.org";
@@ -22,7 +13,7 @@ const char* ntpServer = "pool.ntp.org";
 const int ALARM_PINS[] = { 12,13,14,27 };
 const int NUM_ALARM_PINS = sizeof(ALARM_PINS) / sizeof(ALARM_PINS[0]);
 
-const int ALARM_OUT_PIN = 2;
+const int ALARM_OUT_PIN = 33;
 
 bool alarmArmed = false;
 bool alarmTripped = false;
@@ -188,7 +179,7 @@ String getDateTime()
 
 void handleSensors() {
   for (int i = 0;i < NUM_ALARM_PINS;i++) {
-    alarmsState[i] = (digitalRead(ALARM_PINS[i]) == HIGH);
+    alarmsState[i] = (digitalRead(ALARM_PINS[i]) == LOW);
     if (!alarmTripped && alarmArmed && alarmsState[i]) {
       alarmTripped = true;
       addLog("ALARM","Wykryto wtargnięcie!");
@@ -199,15 +190,12 @@ void handleSensors() {
 void setup() {
   Serial.begin(115200);
 
-  for(int i = 0; i < NUM_ALARM_PINS; i++) pinMode(ALARM_PINS[i],INPUT);
+  for(int i = 0; i < NUM_ALARM_PINS; i++) pinMode(ALARM_PINS[i],INPUT_PULLUP);
   pinMode(ALARM_OUT_PIN, OUTPUT);
 
   // Initialize LittleFS
   Serial.println("Starting LittleFS...");
-  bool ok = LittleFS.begin(true);
-  Serial.printf("LittleFS.begin returned: %d\n", ok);
-
-  if(!LittleFS.begin()){
+  if(!LittleFS.begin(true)){
     Serial.println("An Error has occurred while mounting LittleFS");
     return;
   }
@@ -225,17 +213,16 @@ void setup() {
       delay(3000);
       ESP.restart();
   }
+  WiFi.mode(WIFI_STA);
   // --------------------------
 
   Serial.println(WiFi.localIP());
   // NTP
   setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
   tzset();
-
   configTime(0, 0, ntpServer);
 
   struct tm timeinfo;
-
   Serial.println("Before NTP");
 
   int retries = 5;
@@ -252,28 +239,17 @@ void setup() {
     }
     delay(500);
   }
-
-  Serial.println("After NTP");
-
   loadLogCounter();
-
-  Serial.println("After loadLogCounter");
-
-  server.begin();
-
-  Serial.println("Server started");
-
-  loadLogCounter();
-
+  
   // Route for root / web page
-  //server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  //server.on("/", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
   //  request->send(LittleFS, "/index.html", String(), false, processor);
   //});
 
   // Route dla strony głównej z diagnostyką błędu
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
   Serial.println("Otrzymano zapytanie o stronę główną /");
-  
+
   if (!LittleFS.exists("/index.html")) {
     Serial.println("BŁĄD: Plik /index.html NIE ISTNIEJE w pamięci LittleFS!");
     request->send(404, "text/plain", "Blad: Brak pliku index.html w pamieci ESP32. Uruchom Upload filesystem!");
@@ -282,26 +258,26 @@ void setup() {
   
   Serial.println("Plik index.html znaleziony, wysyłam...");
   request->send(LittleFS, "/index.html", String(), false, processor);
-});
+  });
   
   // Route to load style.css file
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/style.css", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(LittleFS, "/style.css", "text/css");
   });
 
-  server.on("/garaz.jpg", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/garaz.jpg", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
   request->send(LittleFS, "/garaz.jpg", "image/jpeg");
   });
 
   // Route to alarm reset
-  server.on("/alarmreset", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/alarmreset", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     alarmTripped = false;
     addLog("RESET","Skasowano alarm");
     request->send(LittleFS, "/index.html", String(), false, processor);
   });
 
   // Route to alarm arm
-  server.on("/alarmarmtoggle", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/alarmarmtoggle", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     if (alarmArmed) {
       alarmArmed = false;
       addLog("DISARM", "Wyłączono detekcję");
@@ -314,38 +290,38 @@ void setup() {
     request->send(LittleFS, "/index.html", String(), false, processor);
     });
 
-  server.on("/clearlogs", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/clearlogs", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     truncateFile(LittleFS, "/logs.txt");
     logCounter = 0;
     saveLogCounter();
     request->send(LittleFS, "/index.html", String(), false, processor);
   });
 
-  server.on("/alarm", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/alarm", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getAlarm().c_str());
     });
 
-  server.on("/detection", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/detection", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getArmed().c_str());
   });
 
-  server.on("/drzwi", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/drzwi", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getOtwarteN(sensorDrzwi).c_str());
     });
 
-  server.on("/brama", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/brama", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getOtwarteZ(sensorBrama).c_str());
     });
 
-  server.on("/okno", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/okno", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getOtwarteN(sensorOkno).c_str());
     });
 
-  server.on("/ruch", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/ruch", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", getRuch(sensorRuch).c_str());
     });
 
-  server.on("/logs", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/logs", AsyncWebRequestMethod::HTTP_GET, [](AsyncWebServerRequest *request){
     int lastId = 0;
 
     if(request->hasParam("lastId"))
@@ -373,8 +349,8 @@ void setup() {
 
     request->send(response);
     });
-
-  server.begin();
+    server.begin();
+    Serial.println("Server WebAsync - ON");
 }
 
 void loop() {
